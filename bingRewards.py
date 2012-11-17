@@ -1,12 +1,12 @@
 #!/usr/bin/env python2
 import StringIO
-import string
 import zlib
 import gzip
 import urllib
 import urllib2
 import HTMLParser
 import cookielib
+from bingFlyoutParser import BingFlyoutParser
 
 FACEBOOK_EMAIL = "xxx"
 FACEBOOK_PASSWORD = "xxx"
@@ -38,15 +38,6 @@ class HTMLFormInputsParser(HTMLParser.HTMLParser):
             if name != '' and value != '':
                 self.inputs[name] = value.encode("utf-8")
 
-    def clear(self):
-        self.inputs.clear()
-        HTMLParser.HTMLParser.reset(self)
-
-#     def close(self):
-#         HTMLParser.HTMLParser.close(self)
-#         for key in self.inputs.iterkeys():
-#             print key, self.inputs[key]
-
 def getResponseBody(response):
     """ Returns response.read(), but does gzip deflate if appropriate"""
 
@@ -58,10 +49,12 @@ def getResponseBody(response):
             return zlib.decompress(page)
         else:
             fd = StringIO.StringIO(page)
-            data = gzip.GzipFile(fileobj = fd)
-            content = data.read()
-            fd.close()
-            data.close()
+            try:
+                data = gzip.GzipFile(fileobj = fd)
+                try:     content = data.read()
+                finally: data.close()
+            finally:
+                fd.close()
             return content
     else:
         return response.read()
@@ -81,11 +74,13 @@ class BingRewards:
     def __init__(self, facebook_email, facebook_password):
         self.facebook_email = facebook_email
         self.facebook_password = facebook_password
+# bingMainUrl will be set in the end of self.authenticate() method
+        self.bingMainUrl = None
         cookies = cookielib.CookieJar()
         self.opener = urllib2.build_opener(#urllib2.HTTPSHandler(debuglevel = 1),     # be verbose on HTTPS
-                                      #urllib2.HTTPHandler(debuglevel = 1),      # be verbose on HTTP
-                                      HTTPRefererHandler,                       # add Referer header on redirect
-                                      urllib2.HTTPCookieProcessor(cookies))     # keep cookies
+                                           #urllib2.HTTPHandler(debuglevel = 1),      # be verbose on HTTP
+                                           HTTPRefererHandler,                       # add Referer header on redirect
+                                           urllib2.HTTPCookieProcessor(cookies))     # keep cookies
 
     def authenticate(self):
         """
@@ -101,17 +96,17 @@ class BingRewards:
 # request http://www.bing.com
         request = urllib2.Request(url = self.BING_URL, headers = self.HEADERS)
         response = self.opener.open(request)
-        page = getResponseBody(response)
-        response.close()
+        try:     page = getResponseBody(response)
+        finally: response.close()
 
 # get connection URL for provider Facebook
-        s = string.index(page, '"Facebook":"')
+        s = page.index('"Facebook":"')
         s += len('"Facebook":"')
-        e = string.index(page, '"', s)
+        e = page.index('"', s)
         url = page[s:e]
-        s = string.index(url, 'sig=')
+        s = url.index('sig=')
         s += len('sig=')
-        e = string.find(url, '&', s)
+        e = url.find('&', s)
         if e == -1:
             e = len(url)
         url = self.BING_REQUEST_PERMISSIONS + url[s:e]
@@ -122,21 +117,23 @@ class BingRewards:
         request = urllib2.Request(url = url, headers = self.HEADERS)
         request.add_header("Referer", self.BING_URL)
         response = self.opener.open(request)
-        referer = response.geturl()
+        try:
+            referer = response.geturl()
 
 # get Facebook authenctication form action url
-        page = getResponseBody(response)
-        response.close()
-        s = string.index(page, '<form id="login_form"')
-        s = string.index(page, 'action="', s)
+            page = getResponseBody(response)
+        finally:
+            response.close()
+        s = page.index('<form id="login_form"')
+        s = page.index('action="', s)
         s += len('action="')
-        e = string.index(page, '"', s)
+        e = page.index('"', s)
         url = page[s:e]
 
 # find all html elements which need to be sent to the server
-        s = string.index(page, '>', s)
+        s = page.index('>', s)
         s += 1
-        e = string.index(page, '</form>')
+        e = page.index('</form>')
 
         parser = HTMLFormInputsParser()
         parser.feed(page[s:e].decode("utf-8"))
@@ -151,13 +148,55 @@ class BingRewards:
         request = urllib2.Request(url, postFields, self.HEADERS)
         request.add_header("Referer", referer)
         response = self.opener.open(request)
-        page = getResponseBody(response)
-        response.close()
+        try:
+            page = getResponseBody(response)
+            self.bingMainUrl = response.geturl()
+        finally:
+            response.close()
 
-def main():
+    def requestFlyoutPage(self):
+        """
+        Returns bing.com flyout page
+        This page shows what rewarding activity can be performed in
+        order to earn Bing points
+        """
+        url = "http://www.bing.com/rewardsapp/flyoutpage?style=v2"
+        request = urllib2.Request(url = url, headers = self.HEADERS)
+        request.add_header("Referer", self.BING_URL)
+        response = self.opener.open(request)
+        try:     page = getResponseBody(response)
+        finally: response.close()
+        return page
+
+    def getRewardsPoints(self):
+        """Returns rewards points as int"""
+
+        if self.bingMainUrl is None:
+            raise RuntimeError("bingMainUrl is not set, probably you haven't passed the authentication")
+
+# report activity
+        postFields = urllib.urlencode( { "url" : self.bingMainUrl, "V" : "web" } )
+        url = "http://www.bing.com/rewardsapp/reportActivity"
+        request = urllib2.Request(url, postFields, self.HEADERS)
+        request.add_header("Referer", self.BING_URL)
+        response = self.opener.open(request)
+        try:     page = getResponseBody(response)
+        finally: response.close()
+
+# parse activity page
+        s = page.index("txt.innerHTML = '")
+        s += len("txt.innerHTML = '")
+        e = page.index("'", s)
+        return int(page[s:e])
+
+if __name__ == "__main__":
     try:
         bingRewards = BingRewards(FACEBOOK_EMAIL, FACEBOOK_PASSWORD)
         bingRewards.authenticate()
+        #print bingRewards.getRewardsPoints()
+        bingFlyoutParser = BingFlyoutParser()
+        bingFlyoutParser.parse(bingRewards.requestFlyoutPage())
+        bingFlyoutParser.printRewards()
 
     except HTMLParser.HTMLParseError, e:
         print "HTMLParserError: %s" % e
@@ -169,6 +208,3 @@ def main():
     except urllib2.URLError, e:
         print "Failed to reach the server."
         print "Reason: ", e.reason
-
-if __name__ == "__main__":
-    main()
