@@ -8,8 +8,14 @@ import HTMLParser
 import cookielib
 from bingFlyoutParser import BingFlyoutParser
 
-FACEBOOK_EMAIL = "xxx"
-FACEBOOK_PASSWORD = "xxx"
+ERROR_HTML = "error.html"
+FACEBOOK_EMAIL = "ef_shade@mail.ru"
+FACEBOOK_PASSWORD = "/b6R8iFvI8CkjQp{"
+BING_URL = 'http://www.bing.com'
+
+class AuthenticationError(Exception):
+    def __init__(self, message):
+        Exception.__init__(self, message)
 
 class HTTPRefererHandler(urllib2.HTTPRedirectHandler):
     def http_error_302(self, req, fp, code, msg, headers):
@@ -60,8 +66,8 @@ def getResponseBody(response):
         return response.read()
 
 class BingRewards:
-    BING_URL = 'http://www.bing.com'
     BING_REQUEST_PERMISSIONS = "http://www.bing.com/fd/auth/signin?action=interactive&provider=facebook&return_url=http%3a%2f%2fwww.bing.com%2f&src=EXPLICIT&perms=read_stream%2cuser_photos%2cfriends_photos&sig="
+    BING_FLYOUT_PAGE = "http://www.bing.com/rewardsapp/flyoutpage?style=v2"
 # common headers for all requests
     HEADERS = {
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
@@ -87,6 +93,7 @@ class BingRewards:
         Authenticates a user on bing.com with his/her Facebook account.
         FACEBOOK_EMAIL and FACEBOOK_PASSWORD for this class must be set to appropriate values.
 
+        throws AuthenticationError if authentication can not be passed
         throws HTMLParser.HTMLParseError
         throws urllib2.HTTPError if the server couldn't fulfill the request
         throws urllib2.URLError if failed to reach the server
@@ -94,7 +101,7 @@ class BingRewards:
 #        print "Requesting bing.com"
 
 # request http://www.bing.com
-        request = urllib2.Request(url = self.BING_URL, headers = self.HEADERS)
+        request = urllib2.Request(url = BING_URL, headers = self.HEADERS)
         response = self.opener.open(request)
         try:     page = getResponseBody(response)
         finally: response.close()
@@ -115,7 +122,7 @@ class BingRewards:
 
 # request FACEBOOK_CONNECT_ORIGINAL_URL
         request = urllib2.Request(url = url, headers = self.HEADERS)
-        request.add_header("Referer", self.BING_URL)
+        request.add_header("Referer", BING_URL)
         response = self.opener.open(request)
         try:
             referer = response.geturl()
@@ -149,8 +156,19 @@ class BingRewards:
         request.add_header("Referer", referer)
         response = self.opener.open(request)
         try:
-            page = getResponseBody(response)
-            self.bingMainUrl = response.geturl()
+            url = response.geturl()
+# if that's not BING_URL => authentication wasn't pass => write the page to the file and report
+            if url.find(BING_URL) == -1:
+                del self.bingMainUrl
+                self.bingMainUrl = None
+                try:
+                    with open(ERROR_HTML, "w") as fd:
+                        fd.write(getResponseBody(response))
+                        s = "check " + ERROR_HTML + " file for more information"
+                except IOError:
+                    s = "no further information could be provided - failed to write a file " + ERROR_HTML
+                raise AuthenticationError("Authentication could not be passed:\n" + s)
+            self.bingMainUrl = url
         finally:
             response.close()
 
@@ -159,26 +177,33 @@ class BingRewards:
         Returns bing.com flyout page
         This page shows what rewarding activity can be performed in
         order to earn Bing points
+        throws AuthenticationError if self.bingMainUrl is not set
         """
-        url = "http://www.bing.com/rewardsapp/flyoutpage?style=v2"
+        if self.bingMainUrl is None:
+            raise AuthenticationError("bingMainUrl is not set, probably you haven't passed the authentication")
+
+        url = self.BING_FLYOUT_PAGE
         request = urllib2.Request(url = url, headers = self.HEADERS)
-        request.add_header("Referer", self.BING_URL)
+        request.add_header("Referer", BING_URL)
         response = self.opener.open(request)
         try:     page = getResponseBody(response)
         finally: response.close()
         return page
 
     def getRewardsPoints(self):
-        """Returns rewards points as int"""
+        """
+        Returns rewards points as int
+        throws AuthenticationError if self.bingMainUrl is not set
+        """
 
         if self.bingMainUrl is None:
-            raise RuntimeError("bingMainUrl is not set, probably you haven't passed the authentication")
+            raise AuthenticationError("bingMainUrl is not set, probably you haven't passed the authentication")
 
 # report activity
         postFields = urllib.urlencode( { "url" : self.bingMainUrl, "V" : "web" } )
         url = "http://www.bing.com/rewardsapp/reportActivity"
         request = urllib2.Request(url, postFields, self.HEADERS)
-        request.add_header("Referer", self.BING_URL)
+        request.add_header("Referer", BING_URL)
         response = self.opener.open(request)
         try:     page = getResponseBody(response)
         finally: response.close()
@@ -195,8 +220,11 @@ if __name__ == "__main__":
         bingRewards.authenticate()
         #print bingRewards.getRewardsPoints()
         bingFlyoutParser = BingFlyoutParser()
-        bingFlyoutParser.parse(bingRewards.requestFlyoutPage())
+        bingFlyoutParser.parse(bingRewards.requestFlyoutPage(), BING_URL)
         bingFlyoutParser.printRewards()
+
+    except AuthenticationError, e:
+        print "AuthenticationError:\n%s" % e
 
     except HTMLParser.HTMLParseError, e:
         print "HTMLParserError: %s" % e

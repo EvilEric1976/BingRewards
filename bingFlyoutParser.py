@@ -1,7 +1,10 @@
-import HTMLParser
-
 #!/usr/bin/env python2
+
+import HTMLParser
+import re
+
 class Reward:
+    """A class to represent a Bing! reward"""
     def __init__(self):
         self.url = ""               # optional
         self.name = ""
@@ -17,13 +20,40 @@ class Reward:
         """
         return (self.isDone or self.progressMax != 0 and self.progressCurrent == self.progressMax)
 
+    def progressPercentage(self):
+        if self.progressMax == 0:
+            return 0
+        else:
+            return (float(self.progressCurrent) / self.progressMax * 100)
+
 class BingFlyoutParser:
-    """A class to work with Bing! flyout page"""
+    """
+    A class to work with Bing! flyout page
+
+    Usage:
+        bingRewards = BingRewards(FACEBOOK_EMAIL, FACEBOOK_PASSWORD)
+        bingRewards.authenticate()
+        bingFlyoutParser = BingFlyoutParser()
+        bingFlyoutParser.parse(bingRewards.requestFlyoutPage(), "http://www.bing.com")
+
+        after the last step bingFlyoutParser.rewards will contain the list of
+        Reward objects
+
+        all the objects can be printed out with
+        bingFlyoutParser.printRewards()
+    """
     class HTMLRewardsParser(HTMLParser.HTMLParser):
         """
         Gets Bing! flyout page starting from tag
         <div id="messageContainer"> to the tag
         <div id="bottomContainer">, excluding the last one
+
+        Usage:
+        parser = self.HTMLRewardsParser("http://www.bing.com")
+        parser.feed(page[s:e])
+        parser.close()
+
+        then parser.rewards will contain a list of Reward objects
         """
 
         class ParsingStep:
@@ -43,8 +73,14 @@ class BingFlyoutParser:
             DIV_TEXT_YG      = 121    # goes after DIV_MESSAGE_YG for REWARD_NAME "Your goal" and
                                       # data contains REWARD_DESCRIPTION
 
-        def __init__(self):
+        def __init__(self, bing_url):
+            """bing_url is the url of bing main page, generally - http://www.bing.com"""
             HTMLParser.HTMLParser.__init__(self)
+            if bing_url is None or bing_url == "":
+                raise TypeError("bing_url is empty")
+            while bing_url.endswith("/"):
+                bing_url = bing_url[:-1]
+            self.bing_url = bing_url
             self.rewards = []
             self.step = self.ParsingStep.NONE
 
@@ -103,6 +139,11 @@ class BingFlyoutParser:
 
         def handle_endtag(self, tag):
             if tag == 'ul':
+# add self.bing_url prefix to the reward's url if needed
+                if self.reward.url != "":
+                    if self.reward.url.startswith("/"):
+                        self.reward.url = self.bing_url + self.reward.url
+# append the reward to the list of rewards
                 self.rewards.append(self.reward)
                 self.reward = Reward()
 
@@ -116,10 +157,10 @@ class BingFlyoutParser:
                     self.reward.name = data
             elif self.step == self.ParsingStep.SPAN_PROGRESS or \
                     self.step == self.ParsingStep.SPAN_PROGRESS_YG:
-                if data.lower() == 'done':
-                    self.reward.isDone = True
-                else:
-                    if self.reward.progressMax == 0 and not self.reward.isDone:
+                if self.reward.progressMax == 0 and not self.reward.isDone:
+                    if data.lower() == 'done':
+                        self.reward.isDone = True
+                    else:
                         progress = data.split(' of ', 1)
                         self.reward.progressCurrent = int(progress[0])
                         self.reward.progressMax = int(progress[1])
@@ -140,25 +181,76 @@ class BingFlyoutParser:
             if hasattr(self, "reward"):
                 del self.reward
 
+    class RewardType:
+        class Action:
+            PASS   = 1
+            INFORM = 2
+            HIT    = 3
+            SEARCH = 4
+            WARN   = 5
+
+#       Alias                Index Reward.name                        isRe?  Action
+
+        RE_EARN_CREDITS   = (1,    re.compile("Earn \d+ credits?"),   True,  Action.HIT)
+        SEARCH_AND_EARN   = (2,    "Search and Earn",                 False, Action.SEARCH)
+        YOUR_GOAL         = (3,    "Your goal",                       False, Action.INFORM)
+        MAINTAIN_GOLD     = (4,    "Maintain Gold",                   False, Action.INFORM)
+        REFER_A_FRIEND    = (5,    "Refer-A-Friend",                  False, Action.PASS)
+        SEND_A_TWEET      = (6,    "Send a Tweet",                    False, Action.PASS)
+        RE_EARNED_CREDITS = (7,    re.compile("Earned \d+ credits?"), True,  Action.PASS)
+        COMPLETED         = (8,    "Completed",                       False, Action.PASS)
+
+        ALL = [RE_EARN_CREDITS, SEARCH_AND_EARN, YOUR_GOAL, MAINTAIN_GOLD,
+               REFER_A_FRIEND, SEND_A_TWEET, RE_EARNED_CREDITS, COMPLETED]
+
     def __init__(self):
         self.rewards = []           # will be set in self.parse()
 
-    def parse(self, page):
+    def parse(self, page, bing_url):
+        """
+        parses a bing flyout page
+        after this function completes, self.rewards will contain a list of
+        Reward objects
+
+        page - bing flyout page - see the class __doc__ for further information
+        bing_url - url of bing main page - generally http://www.bing.com which will be
+                   added to Reward.url as a prefix if appropriate
+        """
         if page is None:
             raise TypeError("page is None")
 
         s = page.index('<div id="messageContainer">')
         e = page.index('<div id="bottomContainer">', s)
-        parser = self.HTMLRewardsParser()
+        parser = self.HTMLRewardsParser(bing_url)
         parser.feed(page[s:e])
         parser.close()
 
         self.rewards = parser.rewards
 
-    def printRewards(self):
-        i = 1
+    def runRewardsActions(self):
+        """
+        Runs an action for each of self.rewards as described in self.RewardType
+        throws ValueError if self.rewards is empty
+        """
+        if len(self.rewards) == 0:
+            raise ValueError("self.rewards is empty")
+
         for r in self.rewards:
-            print "Reward %d:" % i
+            pass
+
+    def printRewards(self):
+        """
+        Prints out self.rewards list
+        throws ValueError if self.rewards is empty
+        """
+        if len(self.rewards) == 0:
+            raise ValueError("self.rewards is empty")
+
+        i = 0
+        total = len(self.rewards)
+        for r in self.rewards:
+            i += 1
+            print "Reward %d/%d:" % (i, total)
             print "-----------"
             print "name        : %s" % r.name
             if r.url != "":
@@ -166,9 +258,8 @@ class BingFlyoutParser:
             if r.progressMax != 0:
                 print "progressCur : %d" % r.progressCurrent
                 print "progressMax : %d" % r.progressMax
-                print "progress %%  : %0.2f%%" % (float(r.progressCurrent) / r.progressMax * 100)
+                print "progress %%  : %0.2f%%" % r.progressPercentage()
             if r.isDone:
                 print "is done     : true"
             print "description : %s" % r.description
             print
-            i += 1
