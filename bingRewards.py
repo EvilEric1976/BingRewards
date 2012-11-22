@@ -1,17 +1,18 @@
 #!/usr/bin/env python2
-import StringIO
-import zlib
-import gzip
 import urllib
 import urllib2
 import HTMLParser
 import cookielib
-from bingFlyoutParser import BingFlyoutParser
+import bingFlyoutParser as bfp
+import helpers
 
-ERROR_HTML = "error.html"
-FACEBOOK_EMAIL = "ef_shade@mail.ru"
-FACEBOOK_PASSWORD = "/b6R8iFvI8CkjQp{"
+FACEBOOK_EMAIL = "xxx"
+FACEBOOK_PASSWORD = "xxx"
 BING_URL = 'http://www.bing.com'
+
+# extend urllib.addinfourl like it defines @contextmanager (to use with "with" keyword)
+urllib.addinfourl.__enter__ = lambda self: self
+urllib.addinfourl.__exit__  = lambda self, type, value, traceback: self.close()
 
 class AuthenticationError(Exception):
     def __init__(self, message):
@@ -44,28 +45,18 @@ class HTMLFormInputsParser(HTMLParser.HTMLParser):
             if name != '' and value != '':
                 self.inputs[name] = value.encode("utf-8")
 
-def getResponseBody(response):
-    """ Returns response.read(), but does gzip deflate if appropriate"""
-
-    encoding = response.info().get("Content-Encoding")
-
-    if encoding in ("gzip", "x-gzip", "deflate"):
-        page = response.read()
-        if encoding == "deflate":
-            return zlib.decompress(page)
-        else:
-            fd = StringIO.StringIO(page)
-            try:
-                data = gzip.GzipFile(fileobj = fd)
-                try:     content = data.read()
-                finally: data.close()
-            finally:
-                fd.close()
-            return content
-    else:
-        return response.read()
-
 class BingRewards:
+    class RewardResult:
+        def __init__(self, reward):
+            if reward is None or not isinstance(reward, bfp.Reward):
+                raise TypeError("reward is not of Reward type")
+
+            self.o = reward
+            self.isError = False
+            self.message = ""
+# action applied to the reward
+            self.action  = bfp.Reward.Type.Action.WARN
+
     BING_REQUEST_PERMISSIONS = "http://www.bing.com/fd/auth/signin?action=interactive&provider=facebook&return_url=http%3a%2f%2fwww.bing.com%2f&src=EXPLICIT&perms=read_stream%2cuser_photos%2cfriends_photos&sig="
     BING_FLYOUT_PAGE = "http://www.bing.com/rewardsapp/flyoutpage?style=v2"
 # common headers for all requests
@@ -102,9 +93,8 @@ class BingRewards:
 
 # request http://www.bing.com
         request = urllib2.Request(url = BING_URL, headers = self.HEADERS)
-        response = self.opener.open(request)
-        try:     page = getResponseBody(response)
-        finally: response.close()
+        with self.opener.open(request) as response:
+            page = helpers.getResponseBody(response)
 
 # get connection URL for provider Facebook
         s = page.index('"Facebook":"')
@@ -123,14 +113,11 @@ class BingRewards:
 # request FACEBOOK_CONNECT_ORIGINAL_URL
         request = urllib2.Request(url = url, headers = self.HEADERS)
         request.add_header("Referer", BING_URL)
-        response = self.opener.open(request)
-        try:
+        with self.opener.open(request) as response:
             referer = response.geturl()
-
 # get Facebook authenctication form action url
-            page = getResponseBody(response)
-        finally:
-            response.close()
+            page = helpers.getResponseBody(response)
+
         s = page.index('<form id="login_form"')
         s = page.index('action="', s)
         s += len('action="')
@@ -154,23 +141,20 @@ class BingRewards:
         postFields = urllib.urlencode(parser.inputs)
         request = urllib2.Request(url, postFields, self.HEADERS)
         request.add_header("Referer", referer)
-        response = self.opener.open(request)
-        try:
+        with self.opener.open(request) as response:
             url = response.geturl()
 # if that's not BING_URL => authentication wasn't pass => write the page to the file and report
             if url.find(BING_URL) == -1:
                 del self.bingMainUrl
                 self.bingMainUrl = None
                 try:
-                    with open(ERROR_HTML, "w") as fd:
-                        fd.write(getResponseBody(response))
-                        s = "check " + ERROR_HTML + " file for more information"
+                    filename = helpers.dumpErrorPage(common.getResponseBody(response))
+                    s = "check " + filename + " file for more information"
                 except IOError:
-                    s = "no further information could be provided - failed to write a file " + ERROR_HTML
+                    s = "no further information could be provided - failed to write a file into " + \
+                        helpers.RESULTS_DIR + " subfolder"
                 raise AuthenticationError("Authentication could not be passed:\n" + s)
             self.bingMainUrl = url
-        finally:
-            response.close()
 
     def requestFlyoutPage(self):
         """
@@ -185,9 +169,8 @@ class BingRewards:
         url = self.BING_FLYOUT_PAGE
         request = urllib2.Request(url = url, headers = self.HEADERS)
         request.add_header("Referer", BING_URL)
-        response = self.opener.open(request)
-        try:     page = getResponseBody(response)
-        finally: response.close()
+        with self.opener.open(request) as response:
+            page = helpers.getResponseBody(response)
         return page
 
     def getRewardsPoints(self):
@@ -204,9 +187,8 @@ class BingRewards:
         url = "http://www.bing.com/rewardsapp/reportActivity"
         request = urllib2.Request(url, postFields, self.HEADERS)
         request.add_header("Referer", BING_URL)
-        response = self.opener.open(request)
-        try:     page = getResponseBody(response)
-        finally: response.close()
+        with self.opener.open(request) as response:
+            page = helpers.getResponseBody(response)
 
 # parse activity page
         s = page.index("txt.innerHTML = '")
@@ -214,14 +196,169 @@ class BingRewards:
         e = page.index("'", s)
         return int(page[s:e])
 
+    def __processHit(self, reward):
+        """Processes bfp.Reward.Type.Action.HIT and returns self.RewardResult"""
+        res = self.RewardResult(reward)
+        pointsEarned = self.getRewardsPoints()
+        request = urllib2.Request(url = reward.url, headers = self.HEADERS)
+        with self.opener.open(request) as response:
+            page = helpers.getResponseBody(response)
+        pointsEarned = self.getRewardsPoints() - pointsEarned
+# if HIT is against bfp.Reward.Type.RE_EARN_CREDITS - check if pointsEarned is the same to
+# pointsExpected
+        indCol = bfp.Reward.Type.Col.INDEX
+        if reward.tp[indCol] == bfp.Reward.Type.RE_EARN_CREDITS[indCol]:
+            matches = bfp.Reward.Type.RE_EARN_CREDITS[bfp.Reward.Type.Col.NAME].search(reward.name)
+            pointsExpected = int(matches.group(1))
+            if pointsExpected != pointsEarned:
+                filename = helpers.dumpErrorPage(page)
+                res.isError = True
+                res.message = "Expected to earn " + pointsExpected + " points, but earned " + \
+                              pointsEarned + " points. Check " + filename + " for further information"
+        return res
+
+    @staticmethod
+    def __generateSearchStrings(page, searchesCount):
+        """
+        Generates a list of search strings which together form a string of at least
+        searchesCount meaningfull letters
+        page - Bing! search page
+        """
+        s = page.index('<id="results">')
+        e = page.index('<div class="sb_pag">', s)
+        page = page[s:e]
+
+    def __processSearch(self, reward):
+        """Processes bfp.Reward.Type.Action.SEARCH and returns self.RewardResult"""
+        res = self.RewardResult(reward)
+
+        indCol = bfp.Reward.Type.Col.INDEX
+        if reward.tp[indCol] != bfp.Reward.Type.SEARCH_AND_EARN[indCol]:
+            res.isError = True
+            res.message = "Don't know how to process this search"
+            return res
+
+# find out how many searches need to be performed
+        matches = bfp.Reward.Type.SEARCH_AND_EARN_DESCR_RE.search(reward.description)
+        rewardsCount    = int(matches.group(1))
+        rewardCost      = int(matches.group(2))
+        maxRewardsCount = int(matches.group(4))
+        searchesCount = maxRewardsCount * rewardCost / rewardsCount
+
+        if reward.url == "":
+            res.isError = True
+            res.message = "Epected url part in \"" + reward.name + "\" reward, but url was empty"
+            return res
+
+        request = urllib2.Request(url = reward.url, headers = self.HEADERS)
+        with self.opener.open(request) as response:
+            page = helpers.getResponseBody(response)
+            self.__generateSearchString(page, searchesCount)
+            filename = helpers.dumpErrorPage()
+        res.message = "Check " + filename + " for further information"
+
+        return res
+
+    def process(self, rewards):
+        """
+        Runs an action for each of rewards as described in self.RewardType
+        returns results list of self.RewardResult objects
+        """
+        if rewards is None or not isinstance(rewards, list):
+            raise TypeError("rewards is not an instance of list")
+
+        results = []
+
+        for r in rewards:
+            if r.tp is None:
+                action = bfp.Reward.Type.Action.WARN
+            else:
+                action = r.tp[bfp.Reward.Type.Col.ACTION]
+
+            if action == bfp.Reward.Type.Action.HIT:
+                res = self.__processHit(r)
+            elif action == bfp.Reward.Type.Action.SEARCH:
+                res = self.__processSearch(r)
+            else:
+                res = self.RewardResult(r)
+
+            res.action = action
+            results.append(res)
+
+        return results
+
+    def __printReward(self, reward):
+        """Prints a reward"""
+        print "name        : %s" % reward.name
+        if reward.url != "":
+            print "url         : %s" % reward.url
+        if reward.progressMax != 0:
+            print "progressCur : %d" % reward.progressCurrent
+            print "progressMax : %d" % reward.progressMax
+            print "progress %%  : %0.2f%%" % reward.progressPercentage()
+        if reward.isDone:
+            print "is done     : true"
+        print "description : %s" % reward.description
+
+    def printRewards(self, rewards):
+        """
+        Prints out rewards list
+        throws TypeError if rewards is None or not instance of list
+        """
+        if rewards is None or not isinstance(rewards, list):
+            raise TypeError("rewards is not an instance of list")
+
+        i = 0
+        total = len(rewards)
+        for r in rewards:
+            i += 1
+            print "Reward %d/%d:" % (i, total)
+            print "-----------"
+            self.__printReward(r)
+            print
+
+    def __printResult(self, result):
+        """Prints a result"""
+        self.__printReward(result.o)
+        if result.isError:
+            print "   Error    :   true"
+        print "   Message  : " + result.message
+        print "   Action   : " + bfp.Reward.Type.Action.toStr(result.action)
+
+
+    def printResults(self, results):
+        """
+        Prints out results list
+        throws TypeError if results is None or not instance of list
+        """
+        if results is None or not isinstance(results, list):
+            raise TypeError("results is not an instance of list")
+
+        i = 0
+        total = len(results)
+        for r in results:
+            i += 1
+            print "Result %d/%d:" % (i, total)
+            print "-----------"
+            self.__printResult(r)
+            print
+
 if __name__ == "__main__":
     try:
+        helpers.createResultsDir(__file__)
+
         bingRewards = BingRewards(FACEBOOK_EMAIL, FACEBOOK_PASSWORD)
         bingRewards.authenticate()
-        #print bingRewards.getRewardsPoints()
-        bingFlyoutParser = BingFlyoutParser()
-        bingFlyoutParser.parse(bingRewards.requestFlyoutPage(), BING_URL)
-        bingFlyoutParser.printRewards()
+        points  = bingRewards.getRewardsPoints()
+        rewards = bfp.parseFlyoutPage(bingRewards.requestFlyoutPage(), BING_URL)
+
+        bingRewards.printRewards(rewards)
+        results = bingRewards.process(rewards)
+
+        bingRewards.printResults(results)
+        print
+        print "Points before: %d" % points
+        print "Points after:  %d" % bingRewards.getRewardsPoints()
 
     except AuthenticationError, e:
         print "AuthenticationError:\n%s" % e
