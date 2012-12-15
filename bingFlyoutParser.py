@@ -86,7 +86,7 @@ def parseFlyoutPage(page, bing_url):
 
     s = page.index('<div id="messageContainer">')
     e = page.index('<div id="bottomContainer">', s)
-    parser = _HTMLRewardsParser(bing_url)
+    parser = __HTMLRewardsParser(bing_url)
     parser.feed(page[s:e])
     parser.close()
 
@@ -95,7 +95,7 @@ def parseFlyoutPage(page, bing_url):
 ######################################################
 # local classes & functions
 ######################################################
-class _HTMLRewardsParser(HTMLParser.HTMLParser):
+class __HTMLRewardsParser(HTMLParser.HTMLParser):
     """
     Gets Bing! flyout page starting from tag
     <div id="messageContainer"> to the tag

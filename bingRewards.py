@@ -5,6 +5,7 @@ import HTMLParser
 import cookielib
 import bingFlyoutParser as bfp
 import helpers
+from bingSearchStringsGenerator import parseBingNews, BING_NEWS_URL
 
 FACEBOOK_EMAIL = "xxx"
 FACEBOOK_PASSWORD = "xxx"
@@ -217,17 +218,6 @@ class BingRewards:
                               pointsEarned + " points. Check " + filename + " for further information"
         return res
 
-    @staticmethod
-    def __generateSearchStrings(page, searchesCount):
-        """
-        Generates a list of search strings which together form a string of at least
-        searchesCount meaningfull letters
-        page - Bing! search page
-        """
-        s = page.index('<id="results">')
-        e = page.index('<div class="sb_pag">', s)
-        page = page[s:e]
-
     def __processSearch(self, reward):
         """Processes bfp.Reward.Type.Action.SEARCH and returns self.RewardResult"""
         res = self.RewardResult(reward)
@@ -250,12 +240,10 @@ class BingRewards:
             res.message = "Epected url part in \"" + reward.name + "\" reward, but url was empty"
             return res
 
-        request = urllib2.Request(url = reward.url, headers = self.HEADERS)
+        request = urllib2.Request(url = BING_NEWS_URL, headers = self.HEADERS)
         with self.opener.open(request) as response:
             page = helpers.getResponseBody(response)
-            self.__generateSearchString(page, searchesCount)
-            filename = helpers.dumpErrorPage()
-        res.message = "Check " + filename + " for further information"
+        strings = parseBingNews(page, searchesCount)
 
         return res
 
