@@ -5,11 +5,13 @@ import HTMLParser
 import cookielib
 import bingFlyoutParser as bfp
 import helpers
-from bingSearchStringsGenerator import parseBingNews, BING_NEWS_URL
+from bingQueriesGenerator import BingQueriesGenerator, BING_NEWS_URL
 
 FACEBOOK_EMAIL = "xxx"
 FACEBOOK_PASSWORD = "xxx"
 BING_URL = 'http://www.bing.com'
+BING_QUERY_URL = 'http://www.bing.com/search?q='
+BING_QUERY_SUCCESSFULL_RESULT_MARKER = '<div id="results_container">'
 
 # extend urllib.addinfourl like it defines @contextmanager (to use with "with" keyword)
 urllib.addinfourl.__enter__ = lambda self: self
@@ -149,7 +151,7 @@ class BingRewards:
                 del self.bingMainUrl
                 self.bingMainUrl = None
                 try:
-                    filename = helpers.dumpErrorPage(common.getResponseBody(response))
+                    filename = helpers.dumpErrorPage(helpers.getResponseBody(response))
                     s = "check " + filename + " file for more information"
                 except IOError:
                     s = "no further information could be provided - failed to write a file into " + \
@@ -221,6 +223,9 @@ class BingRewards:
     def __processSearch(self, reward):
         """Processes bfp.Reward.Type.Action.SEARCH and returns self.RewardResult"""
         res = self.RewardResult(reward)
+        if reward.isAchieved():
+            res.message = "This reward has been already achieved"
+            return res
 
         indCol = bfp.Reward.Type.Col.INDEX
         if reward.tp[indCol] != bfp.Reward.Type.SEARCH_AND_EARN[indCol]:
@@ -235,15 +240,55 @@ class BingRewards:
         maxRewardsCount = int(matches.group(4))
         searchesCount = maxRewardsCount * rewardCost / rewardsCount
 
+# adjust to the current progress
+        searchesCount -= reward.progressCurrent
+
         if reward.url == "":
             res.isError = True
-            res.message = "Epected url part in \"" + reward.name + "\" reward, but url was empty"
+            res.message = "Expected url part in \"" + reward.name + "\" reward, but url was empty"
             return res
 
         request = urllib2.Request(url = BING_NEWS_URL, headers = self.HEADERS)
         with self.opener.open(request) as response:
             page = helpers.getResponseBody(response)
-        strings = parseBingNews(page, searchesCount)
+
+# TODO generate only unique queries comparing to whatever exists in today's Bing! history
+
+        bingQueriesGenerator = BingQueriesGenerator()
+        queries = bingQueriesGenerator.parseBingNews(page, searchesCount)
+        if len(queries) < searchesCount:
+            print "Warning, not enough queries to run were generated !"
+            print "Requested:", searchesCount
+            print "Generated:", len(bingQueriesGenerator.queries)
+
+        successfullQueries = 0
+        i = 1
+
+        for query in queries:
+            url = BING_QUERY_URL + urllib.quote_plus(query)
+
+            print i, "Querying " + url
+
+            request = urllib2.Request(url = url, headers = self.HEADERS)
+            with self.opener.open(request) as response:
+                page = helpers.getResponseBody(response)
+
+# check for the successfull marker
+            if page.find(BING_QUERY_SUCCESSFULL_RESULT_MARKER) == -1:
+                filename = helpers.dumpErrorPage(page)
+                print "Warning! Query:"
+                print "\t" + query
+                print "returned no results, check " + filename + " file for more information"
+
+            else:
+                successfullQueries += 1
+
+            i += 1
+
+        if successfullQueries < searchesCount:
+            res.message = str(successfullQueries) + " out of " + str(searhcesCount) + " queries were successfully processed"
+        else:
+            res.message = "All " + str(successfullQueries) + " were successfully processed"
 
         return res
 
@@ -343,10 +388,17 @@ if __name__ == "__main__":
         bingRewards.printRewards(rewards)
         results = bingRewards.process(rewards)
 
+        print
+        print "-" * 80
+        print
+
         bingRewards.printResults(results)
+
+        newPoints = bingRewards.getRewardsPoints()
         print
         print "Points before: %d" % points
-        print "Points after:  %d" % bingRewards.getRewardsPoints()
+        print "Points after:  %d" % newPoints
+        print "Points delta:  %d" % newPoints - points
 
     except AuthenticationError, e:
         print "AuthenticationError:\n%s" % e
