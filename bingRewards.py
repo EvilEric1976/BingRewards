@@ -4,6 +4,7 @@ import urllib2
 import HTMLParser
 import cookielib
 import bingFlyoutParser as bfp
+import bingHistory
 import helpers
 from bingQueriesGenerator import BingQueriesGenerator, BING_NEWS_URL
 
@@ -216,8 +217,8 @@ class BingRewards:
             if pointsExpected != pointsEarned:
                 filename = helpers.dumpErrorPage(page)
                 res.isError = True
-                res.message = "Expected to earn " + pointsExpected + " points, but earned " + \
-                              pointsEarned + " points. Check " + filename + " for further information"
+                res.message = "Expected to earn " + str(pointsExpected) + " points, but earned " + \
+                              str(pointsEarned) + " points. Check " + filename + " for further information"
         return res
 
     def __processSearch(self, reward):
@@ -233,6 +234,20 @@ class BingRewards:
             res.message = "Don't know how to process this search"
             return res
 
+# get a set of queries from today's Bing! history
+        url = bingHistory.getBingHistoryTodayURL()
+        request = urllib2.Request(url = url, headers = self.HEADERS)
+        with self.opener.open(request) as response:
+            page = helpers.getResponseBody(response)
+        history = bingHistory.parse(page)
+
+        i = 1
+        for h in history:
+            print i, h
+            i += 1
+
+        raise RuntimeError("good")
+
 # find out how many searches need to be performed
         matches = bfp.Reward.Type.SEARCH_AND_EARN_DESCR_RE.search(reward.description)
         rewardsCount    = int(matches.group(1))
@@ -242,11 +257,6 @@ class BingRewards:
 
 # adjust to the current progress
         searchesCount -= reward.progressCurrent
-
-        if reward.url == "":
-            res.isError = True
-            res.message = "Expected url part in \"" + reward.name + "\" reward, but url was empty"
-            return res
 
         request = urllib2.Request(url = BING_NEWS_URL, headers = self.HEADERS)
         with self.opener.open(request) as response:

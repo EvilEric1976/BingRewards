@@ -122,8 +122,11 @@ class BingQueriesGenerator:
         if numberOfQueries <= 0:
             raise ValueError("numberOfQueries should be more than 0, but it is " + numberOfQueries)
 
-        s = newsPage.index('<div class="NewsResultSet">')
-        e = newsPage.index('<div class="news_gt">', s)
+        startMarker = '<div class="NewsResultSet">'
+        endMarker   = '<div class="news_gt">'
+        s = newsPage.index(startMarker)
+        s += len(startMarker)
+        e = newsPage.index(endMarker, s)
 
         self.numberOfQueries = numberOfQueries
         self.__generateQueries(newsPage[s:e], maxQueryLen)
