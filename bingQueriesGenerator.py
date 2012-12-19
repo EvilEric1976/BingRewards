@@ -14,10 +14,19 @@ BING_NEWS_URL = "http://www.bing.com/news?q=world+news"
 MAX_QUERY_LEN = 50
 
 class BingQueriesGenerator:
-    def __init__(self):
+    def __init__(self, numberOfQueries, history):
+        """
+        param numberOfQueries how many queries a user wants to perform
+        param history a set of queries from today's Bing! history
+        """
+        if numberOfQueries <= 0:
+            raise ValueError("numberOfQueries should be more than 0, but it is " + numberOfQueries)
+        if history is None or not isinstance(history, set):
+            raise ValueError("history is not set or not an instance of set")
+
         self.queries = set()
-# will be set in self.parseBingNews()
-        self.numberOfQueries = 0
+        self.numberOfQueries = numberOfQueries
+        self.history = history
 
     def __addQueriesFromString(self, inputString):
         """
@@ -29,7 +38,10 @@ class BingQueriesGenerator:
         """
         e = len(inputString)
         while(e > 1):
-            self.queries.add(inputString[:e])
+            query = inputString[:e]
+            if query not in self.history:
+                self.queries.add(query)
+
             if len(self.queries) >= self.numberOfQueries:
                 return False
             e -= 1
@@ -101,7 +113,7 @@ class BingQueriesGenerator:
 
         return False
 
-    def parseBingNews(self, newsPage, numberOfQueries, maxQueryLen = MAX_QUERY_LEN):
+    def parseBingNews(self, newsPage, maxQueryLen = MAX_QUERY_LEN):
         """
         parses Bing! news page and generates a set of unique queries to run on Bing!
         A query is considered to be unique if it distingueshes from any other query at
@@ -112,15 +124,12 @@ class BingQueriesGenerator:
         http://www.bing.com/news?q=world+news
 
         param newsPage a news page downloaded from Bing! news
-        param numberOfQueries how many queries a user wants to perform
         param maxQueryLen the maximum query length
 
         returns a set of queries - self.queries
         """
         if newsPage is None: raise TypeError("newsPage is None")
         if newsPage.strip() == "": raise ValueError("newsPage is empty")
-        if numberOfQueries <= 0:
-            raise ValueError("numberOfQueries should be more than 0, but it is " + numberOfQueries)
 
         startMarker = '<div class="NewsResultSet">'
         endMarker   = '<div class="news_gt">'
@@ -128,7 +137,6 @@ class BingQueriesGenerator:
         s += len(startMarker)
         e = newsPage.index(endMarker, s)
 
-        self.numberOfQueries = numberOfQueries
         self.__generateQueries(newsPage[s:e], maxQueryLen)
 
         return self.queries

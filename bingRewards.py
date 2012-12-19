@@ -12,7 +12,6 @@ FACEBOOK_EMAIL = "xxx"
 FACEBOOK_PASSWORD = "xxx"
 BING_URL = 'http://www.bing.com'
 BING_QUERY_URL = 'http://www.bing.com/search?q='
-BING_QUERY_SUCCESSFULL_RESULT_MARKER = '<div id="results_container">'
 
 # extend urllib.addinfourl like it defines @contextmanager (to use with "with" keyword)
 urllib.addinfourl.__enter__ = lambda self: self
@@ -223,6 +222,9 @@ class BingRewards:
 
     def __processSearch(self, reward):
         """Processes bfp.Reward.Type.Action.SEARCH and returns self.RewardResult"""
+
+        BING_QUERY_SUCCESSFULL_RESULT_MARKER = '<div id="results_container">'
+
         res = self.RewardResult(reward)
         if reward.isAchieved():
             res.message = "This reward has been already achieved"
@@ -241,13 +243,6 @@ class BingRewards:
             page = helpers.getResponseBody(response)
         history = bingHistory.parse(page)
 
-        i = 1
-        for h in history:
-            print i, h
-            i += 1
-
-        raise RuntimeError("good")
-
 # find out how many searches need to be performed
         matches = bfp.Reward.Type.SEARCH_AND_EARN_DESCR_RE.search(reward.description)
         rewardsCount    = int(matches.group(1))
@@ -262,10 +257,8 @@ class BingRewards:
         with self.opener.open(request) as response:
             page = helpers.getResponseBody(response)
 
-# TODO generate only unique queries comparing to whatever exists in today's Bing! history
-
-        bingQueriesGenerator = BingQueriesGenerator()
-        queries = bingQueriesGenerator.parseBingNews(page, searchesCount)
+        bingQueriesGenerator = BingQueriesGenerator(searchesCount, history)
+        queries = bingQueriesGenerator.parseBingNews(page)
         if len(queries) < searchesCount:
             print "Warning, not enough queries to run were generated !"
             print "Requested:", searchesCount
@@ -408,7 +401,7 @@ if __name__ == "__main__":
         print
         print "Points before: %d" % points
         print "Points after:  %d" % newPoints
-        print "Points delta:  %d" % newPoints - points
+        print "Points delta:  %d" % (newPoints - points)
 
     except AuthenticationError, e:
         print "AuthenticationError:\n%s" % e

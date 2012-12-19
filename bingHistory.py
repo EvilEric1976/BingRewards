@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 
 from datetime import datetime
+from HTMLParser import HTMLParser
 
 def __parseResultsArea(resultsArea):
     """
@@ -11,6 +12,7 @@ def __parseResultsArea(resultsArea):
     startMarkerLen = len(startMarker)
 
     history = []
+    htmlParser = HTMLParser()
 
     s = 0
     while True:
@@ -26,7 +28,7 @@ def __parseResultsArea(resultsArea):
         e = resultsArea.index("</a>", s)
 
 # resultsArea[s:e] now contains a query from history
-        history.append(resultsArea[s:e])
+        history.append(htmlParser.unescape(resultsArea[s:e]).strip())
 
         s = e + 4
 
