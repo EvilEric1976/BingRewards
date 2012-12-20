@@ -9,6 +9,11 @@ from datetime import datetime
 
 RESULTS_DIR = "results/"
 
+def getLoggingTime():
+    dt = datetime.now()
+    dtStr = dt.strftime("%Y-%m-%d %H:%M:%S") + "." + str(dt.microsecond / 100000)
+    return dtStr
+
 def createResultsDir(f):
     """
     Creates results dir where all output will go based on

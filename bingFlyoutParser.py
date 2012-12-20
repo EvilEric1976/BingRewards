@@ -14,6 +14,8 @@ import HTMLParser
 import re
 
 class Reward:
+    "A class to represent a Bing! reward"
+
     class Type:
         class Action:
             PASS   = 0
@@ -49,7 +51,6 @@ class Reward:
         ALL = (RE_EARN_CREDITS, SEARCH_AND_EARN, YOUR_GOAL, MAINTAIN_GOLD,
                REFER_A_FRIEND, SEND_A_TWEET, RE_EARNED_CREDITS, COMPLETED)
 
-    """A class to represent a Bing! reward"""
     def __init__(self):
         self.url = ""               # optional
         self.name = ""

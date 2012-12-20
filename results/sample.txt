@@ -1,0 +1,142 @@
+Reward 1/5:
+-----------
+name        : Earn 1 credit
+url         : http://www.bing.com/rewardsapp/redirect?url=http%3a%2f%2fwww.bing.com%2fsearch%3fq%3ddecember%2b21st%2bmayan%2bcalendar%26form%3dMFESRP%26publ%3dRewardsDO%26crea%3dTEXT_MFESRP_DailyOffers_Search_41263_1x20&id=a211112254&hash=4ceef6996ac622ce7670c78627a971fd&state=Active&rcid=0&aid=urlreward&bruid=98081A55-3EBB-4F3B-B854-640E4C3D7F20&ml=ExpandedWebLayout&nid=
+description : Some believe the world ends tomorrow. Do your friends have plans?
+
+Reward 2/5:
+-----------
+name        : Search and Earn
+url         : http://www.bing.com/search?q=weather&bnprt=searchandearn
+progressCur : 0
+progressMax : 15
+progress %  : 0.00%
+description : Earn 1 credit per 3 Bing searches up to 15 credits a day.
+
+Reward 3/5:
+-----------
+name        : Your goal
+progressCur : 614
+progressMax : 679
+progress %  : 90.43%
+description : 1 Month Xbox LIVE Gold Membership
+
+Reward 4/5:
+-----------
+name        : Refer-A-Friend
+url         : http://www.bing.com/rewards/share
+progressCur : 0
+progressMax : 100
+progress %  : 0.00%
+description : Your friends are our friends. Get 10 credits each for 10 who join.
+
+Reward 5/5:
+-----------
+name        : Maintain Gold
+progressCur : 150
+progressMax : 150
+progress %  : 100.00%
+description : Do 150 searches monthly up to 20 a day.
+
+2012-12-19 22:06:44.9 -  1/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+Russian+Parli
+2012-12-19 22:06:47.0 -  2/45 - Requesting: http://www.bing.com/search?q=MOSCOW+
+2012-12-19 22:06:49.1 -  3/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+Russian+Parliament+v
+2012-12-19 22:06:51.4 -  4/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+Russian+Parliament+voted+overwhelmingl
+2012-12-19 22:06:53.4 -  5/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+Russian
+2012-12-19 22:06:55.3 -  6/45 - Requesting: http://www.bing.com/search?q=MOSCOW
+2012-12-19 22:06:57.7 -  7/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+Russian+Parliament+voted+ov
+2012-12-19 22:07:00.0 -  8/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+Russian+P
+2012-12-19 22:07:02.0 -  9/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+Russia
+2012-12-19 22:07:04.2 - 10/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+Russian+Parliament+voted+overwhelmi
+2012-12-19 22:07:06.4 - 11/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+R
+2012-12-19 22:07:08.4 - 12/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+Russian+Parliament+voted+overwh
+2012-12-19 22:07:10.3 - 13/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+Russian+Parliame
+2012-12-19 22:07:12.7 - 14/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+
+2012-12-19 22:07:14.7 - 15/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+Russian+Parl
+2012-12-19 22:07:16.7 - 16/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+Russian+Par
+2012-12-19 22:07:18.7 - 17/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+Russian+Parliament+voted+overwhelming
+2012-12-19 22:07:20.7 - 18/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+Russ
+2012-12-19 22:07:22.9 - 19/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+Russian+Parlia
+2012-12-19 22:07:24.9 - 20/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+Russian+Parliament+voted+overw
+2012-12-19 22:07:26.8 - 21/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+Russian+Parliam
+2012-12-19 22:07:29.0 - 22/45 - Requesting: http://www.bing.com/search?q=MOSCOW+Th
+2012-12-19 22:07:31.1 - 23/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+Russian+Parliament+voted+ove
+2012-12-19 22:07:33.2 - 24/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+Russian+Parliamen
+2012-12-19 22:07:35.6 - 25/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The
+2012-12-19 22:07:37.4 - 26/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+Russian+Parliament+voted
+2012-12-19 22:07:39.4 - 27/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+Russian+Parliament+vo
+2012-12-19 22:07:41.4 - 28/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+Rus
+2012-12-19 22:07:43.7 - 29/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+Russian+Parliament
+2012-12-19 22:07:45.6 - 30/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+Russian+Parliament+voted+over
+2012-12-19 22:07:47.8 - 31/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+Russian+Parliament+vote
+2012-12-19 22:07:50.2 - 32/45 - Requesting: http://www.bing.com/search?q=MOSCOW+T
+2012-12-19 22:07:52.2 - 33/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+Russian+Parliament+voted+o
+2012-12-19 22:07:54.5 - 34/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+Russian+Parliament+voted+overwhe
+2012-12-19 22:07:56.7 - 35/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+Russian+Parliament+voted+overwhel
+2012-12-19 22:07:58.6 - 36/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+Russi
+2012-12-19 22:08:00.9 - 37/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+Russian+Pa
+2012-12-19 22:08:03.0 - 38/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+Russian+Parliament+voted+overwhelm
+2012-12-19 22:08:05.0 - 39/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+Ru
+2012-12-19 22:08:06.9 - 40/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+Russian+Parliament+voted+overwhelmingly
+2012-12-19 22:08:08.7 - 41/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+Russian+Parliament+voted+
+2012-12-19 22:08:10.8 - 42/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+Russian+Parliament+voted+overwhelmin
+2012-12-19 22:08:13.1 - 43/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+Russian+Parliament+vot
+2012-12-19 22:08:15.1 - 44/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+Russian+Parliament+
+2012-12-19 22:08:17.2 - 45/45 - Requesting: http://www.bing.com/search?q=MOSCOW+The+Russian+
+
+--------------------------------------------------------------------------------
+
+Result 1/5:
+-----------
+name        : Earn 1 credit
+url         : http://www.bing.com/rewardsapp/redirect?url=http%3a%2f%2fwww.bing.com%2fsearch%3fq%3ddecember%2b21st%2bmayan%2bcalendar%26form%3dMFESRP%26publ%3dRewardsDO%26crea%3dTEXT_MFESRP_DailyOffers_Search_41263_1x20&id=a211112254&hash=4ceef6996ac622ce7670c78627a971fd&state=Active&rcid=0&aid=urlreward&bruid=98081A55-3EBB-4F3B-B854-640E4C3D7F20&ml=ExpandedWebLayout&nid=
+description : Some believe the world ends tomorrow. Do your friends have plans?
+   Message  :
+   Action   : hit
+
+Result 2/5:
+-----------
+name        : Search and Earn
+url         : http://www.bing.com/search?q=weather&bnprt=searchandearn
+progressCur : 0
+progressMax : 15
+progress %  : 0.00%
+description : Earn 1 credit per 3 Bing searches up to 15 credits a day.
+   Message  : All 45 were successfully processed
+   Action   : search
+
+Result 3/5:
+-----------
+name        : Your goal
+progressCur : 614
+progressMax : 679
+progress %  : 90.43%
+description : 1 Month Xbox LIVE Gold Membership
+   Message  :
+   Action   : inform
+
+Result 4/5:
+-----------
+name        : Refer-A-Friend
+url         : http://www.bing.com/rewards/share
+progressCur : 0
+progressMax : 100
+progress %  : 0.00%
+description : Your friends are our friends. Get 10 credits each for 10 who join.
+   Message  :
+   Action   : pass
+
+Result 5/5:
+-----------
+name        : Maintain Gold
+progressCur : 150
+progressMax : 150
+progress %  : 100.00%
+description : Do 150 searches monthly up to 20 a day.
+   Message  :
+   Action   : inform
+
+
+Points before: 614
+Points after:  630
+Points delta:  16

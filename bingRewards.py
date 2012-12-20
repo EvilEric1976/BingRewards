@@ -1,4 +1,6 @@
 #!/usr/bin/env python2
+import time
+import random
 import urllib
 import urllib2
 import HTMLParser
@@ -11,7 +13,9 @@ from bingQueriesGenerator import BingQueriesGenerator, BING_NEWS_URL
 FACEBOOK_EMAIL = "xxx"
 FACEBOOK_PASSWORD = "xxx"
 BING_URL = 'http://www.bing.com'
-BING_QUERY_URL = 'http://www.bing.com/search?q='
+
+# sleep that amound of seconds (can be float) + some random(0, 500) milliseconds
+SLEEP_BETWEEN_BING_QUERIES = 1.0
 
 # extend urllib.addinfourl like it defines @contextmanager (to use with "with" keyword)
 urllib.addinfourl.__enter__ = lambda self: self
@@ -223,6 +227,7 @@ class BingRewards:
     def __processSearch(self, reward):
         """Processes bfp.Reward.Type.Action.SEARCH and returns self.RewardResult"""
 
+        BING_QUERY_URL = 'http://www.bing.com/search?q='
         BING_QUERY_SUCCESSFULL_RESULT_MARKER = '<div id="results_container">'
 
         res = self.RewardResult(reward)
@@ -266,11 +271,17 @@ class BingRewards:
 
         successfullQueries = 0
         i = 1
+        totalQueries = len(queries)
 
         for query in queries:
+            if i > 1:
+# sleep some time between queries (don't worry Bing! ;) )
+                t = SLEEP_BETWEEN_BING_QUERIES + (random.uniform(0, 500) / 1000)
+                time.sleep(t)
+
             url = BING_QUERY_URL + urllib.quote_plus(query)
 
-            print i, "Querying " + url
+            print "%s - %2d/%2d - Requesting: %s" % (helpers.getLoggingTime(), i, totalQueries, url)
 
             request = urllib2.Request(url = url, headers = self.HEADERS)
             with self.opener.open(request) as response:
@@ -289,9 +300,9 @@ class BingRewards:
             i += 1
 
         if successfullQueries < searchesCount:
-            res.message = str(successfullQueries) + " out of " + str(searhcesCount) + " queries were successfully processed"
+            res.message = str(successfullQueries) + " out of " + str(searhcesCount) + " requests were successfully processed"
         else:
-            res.message = "All " + str(successfullQueries) + " were successfully processed"
+            res.message = "All " + str(successfullQueries) + " requests were successfully processed"
 
         return res
 
@@ -381,6 +392,10 @@ class BingRewards:
 
 if __name__ == "__main__":
     try:
+        print "%s - script started" % helpers.getLoggingTime()
+        print "-" * 80
+        print
+
         helpers.createResultsDir(__file__)
 
         bingRewards = BingRewards(FACEBOOK_EMAIL, FACEBOOK_PASSWORD)
@@ -401,7 +416,11 @@ if __name__ == "__main__":
         print
         print "Points before: %d" % points
         print "Points after:  %d" % newPoints
-        print "Points delta:  %d" % (newPoints - points)
+        print "Points earned: %d" % (newPoints - points)
+
+        print
+        print "-" * 80
+        print "%s - script ended" % helpers.getLoggingTime()
 
     except AuthenticationError, e:
         print "AuthenticationError:\n%s" % e
