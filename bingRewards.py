@@ -256,7 +256,7 @@ class BingRewards:
         searchesCount = maxRewardsCount * rewardCost / rewardsCount
 
 # adjust to the current progress
-        searchesCount -= reward.progressCurrent
+        searchesCount -= reward.progressCurrent * rewardCost
 
         request = urllib2.Request(url = BING_NEWS_URL, headers = self.HEADERS)
         with self.opener.open(request) as response:
