@@ -262,6 +262,7 @@ class BingRewards:
         with self.opener.open(request) as response:
             page = helpers.getResponseBody(response)
 
+# generate a set of queries to run
         bingQueriesGenerator = BingQueriesGenerator(searchesCount, history)
         queries = bingQueriesGenerator.parseBingNews(page)
         if len(queries) < searchesCount:

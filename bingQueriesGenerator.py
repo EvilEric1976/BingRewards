@@ -45,7 +45,8 @@ class BingQueriesGenerator:
             if len(self.queries) >= self.numberOfQueries:
                 return False
             e -= 1
-            while(inputString[-1] == ' '): e -= 1
+# rstrip()
+            while(inputString[e-1:e] in " \u200b"): e -= 1
 
         return True
 
