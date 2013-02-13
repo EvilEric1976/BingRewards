@@ -2,8 +2,9 @@
 
 from datetime import datetime
 from HTMLParser import HTMLParser
+import helpers
 
-def __parseResultsArea(resultsArea):
+def __parseResultsArea1(resultsArea):
     """
     Parses <div id="resultsArea">...</div> from Bing! history page
     Returns a list of queries (can be empty list)
@@ -34,6 +35,40 @@ def __parseResultsArea(resultsArea):
 
     return history
 
+def __isApproach(page, startMarker, endMarker):
+    s = page.find(startMarker)
+    if s == -1: return (False, 0, 0)
+    s += len(startMarker)
+    e = page.index(endMarker, s)
+    return (True, s, e)
+
+def __parseResultsArea2(resultsArea):
+    """
+    Parses results from Bing! history page
+    Returns a list of queries (can be empty list)
+    """
+    startMarker = '<span class="sh_item_qu_query">'
+    startMarkerLen = len(startMarker)
+
+    history = []
+    htmlParser = HTMLParser()
+
+    s = 0
+    while True:
+        s = resultsArea.find(startMarker, s)
+        if s == -1: break
+
+# locate a query
+        s += startMarkerLen
+        e = resultsArea.index("</span>", s)
+
+# resultsArea[s:e] now contains a query from history
+        history.append(htmlParser.unescape(resultsArea[s:e]).strip())
+
+        s = e + 7
+
+    return history
+
 def parse(page):
     """
     Parses Bing! history page and returns a set of queries for today
@@ -42,13 +77,16 @@ def parse(page):
     if page is None: raise TypeError("page is None")
     if page.strip() == "": raise ValueError("page is empty")
 
-    startMarker = '<div id="results_area">'
-    endMarker   = '<div id="sidebar">'
-    s = page.index(startMarker)
-    s += len(startMarker)
-    e = page.index(endMarker, s)
+    (isIt, s, e) = __isApproach(page, '<div id="results_area">', '<div id="sidebar">')
+    if isIt:
+        return set(__parseResultsArea1(page[s:e]))
 
-    return set(__parseResultsArea(page[s:e]))
+    (isIt, s, e) = __isApproach(page, '<ul class="sh_dayul">', '</ul>')
+    if isIt:
+        return set(__parseResultsArea2(page[s:e]))
+
+    filename = helpers.dumpErrorPage(page)
+    raise NotImplementedError("No markers were found for the history. Check " + helpers.RESULTS_DIR + "/" + filename)
 
 def getBingHistoryTodayURL():
     """

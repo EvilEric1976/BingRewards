@@ -20,7 +20,7 @@ class BingQueriesGenerator:
         param history a set of queries from today's Bing! history
         """
         if numberOfQueries <= 0:
-            raise ValueError("numberOfQueries should be more than 0, but it is " + numberOfQueries)
+            raise ValueError("numberOfQueries should be more than 0, but it is " + str(numberOfQueries))
         if history is None or not isinstance(history, set):
             raise ValueError("history is not set or not an instance of set")
 
