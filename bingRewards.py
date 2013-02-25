@@ -301,7 +301,7 @@ class BingRewards:
             i += 1
 
         if successfullQueries < searchesCount:
-            res.message = str(successfullQueries) + " out of " + str(searhcesCount) + " requests were successfully processed"
+            res.message = str(successfullQueries) + " out of " + str(searchesCount) + " requests were successfully processed"
         else:
             res.message = "All " + str(successfullQueries) + " requests were successfully processed"
 
