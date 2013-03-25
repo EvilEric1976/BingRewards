@@ -85,8 +85,10 @@ def parse(page):
     if isIt:
         return set(__parseResultsArea2(page[s:e]))
 
-    filename = helpers.dumpErrorPage(page)
-    raise NotImplementedError("No markers were found for the history. Check " + helpers.RESULTS_DIR + "/" + filename)
+    return set()
+
+#    filename = helpers.dumpErrorPage(page)
+#    raise NotImplementedError("No markers were found for the history. Check " + helpers.RESULTS_DIR + "/" + filename)
 
 def getBingHistoryTodayURL():
     """

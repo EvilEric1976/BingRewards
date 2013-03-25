@@ -131,6 +131,10 @@ class BingRewards:
         e = page.index('"', s)
         url = page[s:e]
 
+# relative url? add url from the previous response
+        if url[0:1] == "/":
+            url = referer + url
+
 # find all html elements which need to be sent to the server
         s = page.index('>', s)
         s += 1
