@@ -84,7 +84,7 @@ class BingQueriesGenerator:
         Returns True if self.numberOfQueries queries were generated in
         self.queries set
         """
-        snippetMarkerBegin = '<span class="sn_snip">'
+        snippetMarkerBegin = '<span class="sn_snip"'
         snippetMarkerBeginLen = len(snippetMarkerBegin)
         snippetMarkerEnd = '</span>'
         snippetMarkerEndLen = len(snippetMarkerEnd)
@@ -97,6 +97,8 @@ class BingQueriesGenerator:
             s = newsResultSet.find(snippetMarkerBegin, s)
             if s == -1: break
             s += snippetMarkerBeginLen
+            s = newsResultSet.index(">", s)
+            s += 1
             e = newsResultSet.index(snippetMarkerEnd, s)
 
 # don't include the last "..." charecter
