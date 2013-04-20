@@ -14,8 +14,10 @@ FACEBOOK_EMAIL = "xxx"
 FACEBOOK_PASSWORD = "xxx"
 BING_URL = 'http://www.bing.com'
 
-# sleep that amound of seconds (can be float) + some random(0, 500) milliseconds
+# sleep that amound of seconds (can be float) + some random(0, SLEEP_BETWEEN_BING_QUERIES_SALT) milliseconds
 SLEEP_BETWEEN_BING_QUERIES = 1.0
+# this random number of milliseconds will be added to SLEEP_BETWEEN_BING_QUERIES to get the resulting sleep time
+SLEEP_BETWEEN_BING_QUERIES_SALT = 3000
 
 # extend urllib.addinfourl like it defines @contextmanager (to use with "with" keyword)
 urllib.addinfourl.__enter__ = lambda self: self
@@ -281,7 +283,7 @@ class BingRewards:
         for query in queries:
             if i > 1:
 # sleep some time between queries (don't worry Bing! ;) )
-                t = SLEEP_BETWEEN_BING_QUERIES + (random.uniform(0, 500) / 1000)
+                t = SLEEP_BETWEEN_BING_QUERIES + (random.uniform(0, SLEEP_BETWEEN_BING_QUERIES_SALT) / 1000)
                 time.sleep(t)
 
             url = BING_QUERY_URL + urllib.quote_plus(query)
