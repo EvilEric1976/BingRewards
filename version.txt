@@ -1,4 +1,6 @@
-Current version 1.1
+Current version 1.2
+
+1.2     Configurable salt to sleep between requests
 
 1.1     Bing! news changed the output format for tag <span class="sn_snip">. This version works both with the former and the latter behavior
 
