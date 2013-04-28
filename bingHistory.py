@@ -75,7 +75,12 @@ def parse(page):
     Can be an empty set
     """
     if page is None: raise TypeError("page is None")
-    if page.strip() == "": raise ValueError("page is empty")
+    if page.strip() == "":
+        print "-------------------------------"
+        print "Warning: Bing! history is empty"
+        print "-------------------------------"
+        print
+        return set()
 
     (isIt, s, e) = __isApproach(page, '<div id="results_area">', '<div id="sidebar">')
     if isIt:
