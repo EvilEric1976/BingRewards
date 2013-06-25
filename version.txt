@@ -1,4 +1,6 @@
-Current version 1.3
+Current version 1.4
+
+1.4     Bing! rewards page changed. Bing! flyout is now requested with http://www.bing.com/rewards/dashboard in a Referer header, otherwise it is empty
 
 1.3     Don't raise exception if history page is empty - warn instead.
         added to bingRewards.py:

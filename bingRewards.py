@@ -182,7 +182,7 @@ class BingRewards:
 
         url = self.BING_FLYOUT_PAGE
         request = urllib2.Request(url = url, headers = self.HEADERS)
-        request.add_header("Referer", BING_URL)
+        request.add_header("Referer", "http://www.bing.com/rewards/dashboard")
         with self.opener.open(request) as response:
             page = helpers.getResponseBody(response)
         return page
@@ -205,8 +205,8 @@ class BingRewards:
             page = helpers.getResponseBody(response)
 
 # parse activity page
-        s = page.index("txt.innerHTML = '")
-        s += len("txt.innerHTML = '")
+        s = page.index("t.innerHTML='")
+        s += len("t.innerHTML='")
         e = page.index("'", s)
         return int(page[s:e])
 
