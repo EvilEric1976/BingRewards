@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+
+<!--
+    configuration for bing rewards automation script
+    example configuration:
+
+    <configuration>
+        <accounts>
+            <account type="Facebook" disabled="true">
+                <login>xxx</login>
+                <password>xxx</password>
+            </account>
+            <account type="Live" disabled="false">
+                <login>xxx</login>
+                <password>xxx</password>
+            </account>
+        </accounts>
+    </configuration>
+-->
+
+<configuration>
+    <accounts>
+        <account type="Facebook" disabled="true">
+            <login>xxx</login>
+            <password>xxx</password>
+        </account>
+        <account type="Live" disabled="false">
+            <login>xxx</login>
+            <password>xxx</password>
+        </account>
+    </accounts>
+</configuration>

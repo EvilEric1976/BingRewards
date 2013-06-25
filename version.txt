@@ -1,4 +1,11 @@
-Current version 1.4
+Current version 2.0
+
+2.0     +) Live authentication supported
+        *) The script is now executed with
+           python main.py
+           See `python main.py -h` to understand how the script can be used
+        *) Authentication configuration moved to config.xml. No direct script changes to use different account information are needed.
+           config.xml accepts Live and Facebook authentication types. Any number of authentications can be added to config.xml.
 
 1.4     Bing! rewards page changed. Bing! flyout is now requested with http://www.bing.com/rewards/dashboard in a Referer header, otherwise it is empty
 

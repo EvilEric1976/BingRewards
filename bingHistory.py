@@ -1,5 +1,9 @@
 #!/usr/bin/env python2
 
+#
+# developed by Sergey Markelov (2013)
+#
+
 from datetime import datetime
 from HTMLParser import HTMLParser
 import helpers

@@ -1,4 +1,9 @@
 #!/usr/bin/env python2
+
+#
+# developed by Sergey Markelov (2013)
+#
+
 """
 Bing! flyout page parser
 
@@ -11,6 +16,7 @@ Usage:
 """
 
 import HTMLParser
+import helpers
 import re
 
 class Reward:

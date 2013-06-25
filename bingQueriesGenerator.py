@@ -1,4 +1,9 @@
 #!/usr/bin/env python2
+
+#
+# developed by Sergey Markelov (2013)
+#
+
 """
 Bing! queries generator
 
