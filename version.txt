@@ -1,4 +1,8 @@
-Current version 2.0
+Current version 2.1
+
+2.1     +) main.py is now explicitly marked as a python script
+        *) chmod 644 bingRewards.py
+        *) chmod 755 main.py
 
 2.0     +) Live authentication supported
         *) The script is now executed with
