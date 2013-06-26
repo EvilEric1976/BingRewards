@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 #
 # developed by Sergey Markelov (2013)
 #
