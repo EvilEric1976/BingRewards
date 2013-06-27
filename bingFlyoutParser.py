@@ -36,26 +36,32 @@ class Reward:
                 return (actions[action])
 
         class Col:
-            INDEX  = 0
-            NAME   = 1
-            ISRE   = 2
-            ACTION = 3
+            INDEX       = 0
+            NAME        = 1
+            DESCRIPTION = 2  # optional field, can be set to None
+            ISRE        = 3
+            ACTION      = 4
 
         SEARCH_AND_EARN_DESCR_RE = re.compile("Earn (\d)+ credits? per (\d)+ Bing search(es)? up to (\d+) credits? a day")
+        EARN_CREDITS_RE = re.compile("Earn (\d+) credits?")
 
-#       Alias                Index Reward.name                          isRe?  Action
+#       Alias                   Index Reward.name
+#                           optional(Reward.description)                         isRe?  Action
 
-        RE_EARN_CREDITS   = (1,    re.compile("Earn (\d+) credits?"),   True,  Action.HIT)
-        SEARCH_AND_EARN   = (2,    "Search and Earn",                   False, Action.SEARCH)
-        YOUR_GOAL         = (3,    "Your goal",                         False, Action.INFORM)
-        MAINTAIN_GOLD     = (4,    "Maintain Gold",                     False, Action.INFORM)
-        REFER_A_FRIEND    = (5,    "Refer-A-Friend",                    False, Action.PASS)
-        SEND_A_TWEET      = (6,    "Send a Tweet",                      False, Action.PASS)
-        RE_EARNED_CREDITS = (7,    re.compile("Earned \d+ credits?"),   True,  Action.PASS)
-        COMPLETED         = (8,    "Completed",                         False, Action.PASS)
+        RE_EARN_CREDITS_PASS = (1,    EARN_CREDITS_RE,
+                            "Get the best of Bing by signing in with Facebook.", True,  Action.PASS)
+        RE_EARN_CREDITS      = (2,    EARN_CREDITS_RE,                     None, True,  Action.HIT)
+        SEARCH_AND_EARN      = (3,    "Search and Earn",                   None, False, Action.SEARCH)
+        YOUR_GOAL            = (4,    "Your goal",                         None, False, Action.INFORM)
+        MAINTAIN_GOLD        = (5,    "Maintain Gold",                     None, False, Action.INFORM)
+        REFER_A_FRIEND       = (6,    "Refer-A-Friend",                    None, False, Action.PASS)
+        SEND_A_TWEET         = (7,    "Send a Tweet",                      None, False, Action.PASS)
+        RE_EARNED_CREDITS    = (8,    re.compile("Earned \d+ credits?"),   None, True,  Action.PASS)
+        COMPLETED            = (9,    "Completed",                         None, False, Action.PASS)
+        SILVER_STATUS        = (10,   "Silver Status",                     None, False, Action.PASS)
 
-        ALL = (RE_EARN_CREDITS, SEARCH_AND_EARN, YOUR_GOAL, MAINTAIN_GOLD,
-               REFER_A_FRIEND, SEND_A_TWEET, RE_EARNED_CREDITS, COMPLETED)
+        ALL = (RE_EARN_CREDITS_PASS, RE_EARN_CREDITS, SEARCH_AND_EARN, YOUR_GOAL, MAINTAIN_GOLD,
+               REFER_A_FRIEND, SEND_A_TWEET, RE_EARNED_CREDITS, COMPLETED, SILVER_STATUS)
 
     def __init__(self):
         self.url = ""               # optional
@@ -246,9 +252,14 @@ class __HTMLRewardsParser(HTMLParser.HTMLParser):
         """Assigns a reward type to self.reward based on self.reward.name"""
         for t in Reward.Type.ALL:
             if t[Reward.Type.Col.ISRE]:         # regex
-                if t[Reward.Type.Col.NAME].search(self.reward.name):
-                    self.reward.tp = t
-                    return
-            elif t[Reward.Type.Col.NAME] == self.reward.name:
-                self.reward.tp = t
-                return
+                if t[Reward.Type.Col.NAME].search(self.reward.name) \
+                    and ( t[Reward.Type.Col.DESCRIPTION] is None \
+                          or t[Reward.Type.Col.DESCRIPTION] == self.reward.description ):
+                                self.reward.tp = t
+                                return
+
+            elif t[Reward.Type.Col.NAME] == self.reward.name \
+                    and ( t[Reward.Type.Col.DESCRIPTION] is None \
+                          or t[Reward.Type.Col.DESCRIPTION] == self.reward.description ):
+                                self.reward.tp = t
+                                return

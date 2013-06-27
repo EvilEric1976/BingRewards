@@ -264,9 +264,10 @@ class BingRewards:
         print "   Action   : " + bfp.Reward.Type.Action.toStr(result.action)
 
 
-    def printResults(self, results):
+    def printResults(self, results, verbose):
         """
         Prints out results list
+        if verbose - prints all results, otherwise prints errors only
         throws TypeError if results is None or not instance of list
         """
         if results is None or not isinstance(results, list):
@@ -275,8 +276,9 @@ class BingRewards:
         i = 0
         total = len(results)
         for r in results:
-            i += 1
-            print "Result %d/%d:" % (i, total)
-            print "-----------"
-            self.__printResult(r)
-            print
+            if verbose or r.isError:
+                i += 1
+                print "Result %d/%d:" % (i, total)
+                print "-----------"
+                self.__printResult(r)
+                print

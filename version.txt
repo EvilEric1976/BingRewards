@@ -1,4 +1,8 @@
-Current version 2.1
+Current version 2.2
+
+2.2     +) bingFlyoutParser now understands descriptions
+        +) bingFlyoutParser + Reward.Action.PASS for 'Silver Status' and for 'Get the best of Bing by signing in with Facebook.' description
+        +) bingRewards.printResults() now prints errors if verbose mode is off
 
 2.1     +) main.py is now explicitly marked as a python script
         *) chmod 644 bingRewards.py

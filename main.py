@@ -39,8 +39,7 @@ def earnRewards(authType, login, password):
             print "-" * 80
             print
 
-        if verbose:
-            bingRewards.printResults(results)
+        bingRewards.printResults(results, verbose)
 
         newPoints = bingRewards.getRewardsPoints()
         print
