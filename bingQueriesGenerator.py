@@ -14,6 +14,7 @@ Usage:
 """
 
 import re
+import helpers
 
 BING_NEWS_URL = "http://www.bing.com/news?q=world+news"
 MAX_QUERY_LEN = 50
@@ -139,10 +140,12 @@ class BingQueriesGenerator:
         if newsPage is None: raise TypeError("newsPage is None")
         if newsPage.strip() == "": raise ValueError("newsPage is empty")
 
-        startMarker = '<div class="NewsResultSet">'
-        endMarker   = '<div class="news_gt">'
+        startMarker = '<div class="NewsResultSet"'
+        endMarker   = '<div class="news_gt"'
         s = newsPage.index(startMarker)
         s += len(startMarker)
+        s = newsPage.index(">", s)
+        s += 1
         e = newsPage.index(endMarker, s)
 
         self.__generateQueries(newsPage[s:e], maxQueryLen)

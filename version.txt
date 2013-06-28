@@ -1,4 +1,6 @@
-Current version 2.2
+Current version 2.3
+
+2.3     *) bingQueriesGenerator - changed parsing HTML tag to comply with new Bing! output
 
 2.2     +) bingFlyoutParser now understands descriptions
         +) bingFlyoutParser + Reward.Action.PASS for 'Silver Status' and for 'Get the best of Bing by signing in with Facebook.' description
