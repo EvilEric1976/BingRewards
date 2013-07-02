@@ -1,4 +1,6 @@
-Current version 2.3
+Current version 2.4
+
+2.4     +) main.py - total points earned during the session is now printed out when the script finishes
 
 2.3     *) bingQueriesGenerator - changed parsing HTML tag to comply with new Bing! output
 

@@ -19,6 +19,7 @@ import helpers
 verbose = False
 
 def earnRewards(authType, login, password):
+    """Earns Bing! reward points and returnes how many points has been earned"""
     try:
         if authType is None: raise ValueError("authType is None")
         if login is None: raise ValueError("login is None")
@@ -42,15 +43,18 @@ def earnRewards(authType, login, password):
         bingRewards.printResults(results, verbose)
 
         newPoints = bingRewards.getRewardsPoints()
+        pointsEarned = newPoints - points
         print
         print "%s - %s" % (authType, login)
         print
         print "Points before: %d" % points
         print "Points after:  %d" % newPoints
-        print "Points earned: %d" % (newPoints - points)
+        print "Points earned: %d" % pointsEarned
 
         print
         print "-" * 80
+
+        return pointsEarned
 
     except AuthenticationError, e:
         print "AuthenticationError:\n%s" % e
@@ -104,6 +108,7 @@ if __name__ == "__main__":
         print "IOError: %s" % e
         sys.exit(2)
 
+    totalPoints = 0
     root = tree.getroot()
     for accounts in root.findall("accounts"):
         for account in accounts.findall("account"):
@@ -113,6 +118,8 @@ if __name__ == "__main__":
             accountType = account.get("type")
             login = account.find("login").text
             password = account.find("password").text
-            earnRewards(accountType, login, password)
+            totalPoints += earnRewards(accountType, login, password)
 
+    print "Total points earned: %d" % totalPoints
+    print
     print "%s - script ended" % helpers.getLoggingTime()
