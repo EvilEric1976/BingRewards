@@ -16,7 +16,6 @@ Usage:
 """
 
 import HTMLParser
-import helpers
 import re
 
 class Reward:

@@ -1,4 +1,6 @@
-Current version 2.4
+Current version 2.5
+
+2.5     *) fixed crash in bingQueriesGenerator.py - changed the format of startMarker and endMarker of newsPage
 
 2.4     +) main.py - total points earned during the session is now printed out when the script finishes
 
