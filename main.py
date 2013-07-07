@@ -20,6 +20,8 @@ verbose = False
 
 def earnRewards(authType, login, password):
     """Earns Bing! reward points and returnes how many points has been earned"""
+    pointsEarned = 0
+    noException = False
     try:
         if authType is None: raise ValueError("authType is None")
         if login is None: raise ValueError("login is None")
@@ -54,7 +56,7 @@ def earnRewards(authType, login, password):
         print
         print "-" * 80
 
-        return pointsEarned
+        noException = True
 
     except AuthenticationError, e:
         print "AuthenticationError:\n%s" % e
@@ -69,6 +71,14 @@ def earnRewards(authType, login, password):
     except urllib2.URLError, e:
         print "Failed to reach the server."
         print "Reason: ", e.reason
+
+    finally:
+        if not noException:
+            print
+            print "For: %s - %s" % (authType, login)
+            print
+            print "-" * 80
+        return pointsEarned
 
 def usage():
     print "Usage:"
