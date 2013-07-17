@@ -1,4 +1,6 @@
-Current version 2.6
+Current version 2.7
+
+2.7     +) Lifetime Credits output for every account
 
 2.6     *) in case of several accounts and one of the first accounts processing fails with exception, script doesn't crashes, but continues for all of the rest accounts
 

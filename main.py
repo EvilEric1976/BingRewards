@@ -45,13 +45,15 @@ def earnRewards(authType, login, password):
         bingRewards.printResults(results, verbose)
 
         newPoints = bingRewards.getRewardsPoints()
+        lifetimeCredits = bingRewards.getLifetimeCredits()
         pointsEarned = newPoints - points
         print
         print "%s - %s" % (authType, login)
         print
-        print "Points before: %d" % points
-        print "Points after:  %d" % newPoints
-        print "Points earned: %d" % pointsEarned
+        print "Points before:    %6d" % points
+        print "Points after:     %6d" % newPoints
+        print "Points earned:    %6d" % pointsEarned
+        print "Lifetime Credits: %6d" % lifetimeCredits
 
         print
         print "-" * 80

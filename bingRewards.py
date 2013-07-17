@@ -72,6 +72,30 @@ class BingRewards:
             page = helpers.getResponseBody(response)
         return page
 
+    def getLifetimeCredits(self):
+        """
+        Returns http://www.bing.com/rewards/dashboard Lifetime Credits
+        The number of credits earned since day one of the account
+        """
+        url = "http://www.bing.com/rewards/dashboard"
+        request = urllib2.Request(url = url, headers = bingCommon.HEADERS)
+        request.add_header("Referer", bingCommon.BING_URL)
+        with self.opener.open(request) as response:
+            page = helpers.getResponseBody(response)
+
+# parse dashboard page
+        s = page.index('<div class="user-balance')
+        s += len('<div class="user-balance')
+        s = page.index("Lifetime Credits</span>", s)
+        s += len("Lifetime Credits</span>")
+        s = page.index('<span class="data-value-text', s)
+        s += len('<span class="data-value-text')
+        s = page.index(">", s) + 1
+        e = page.index("</span>", s)
+
+        result = int(page[s:e])
+        return result
+
     def getRewardsPoints(self):
         """
         Returns rewards points as int
